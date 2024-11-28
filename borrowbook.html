@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrow Book</title>
+    <link rel="stylesheet" href="borrowbook.css">
+    <script>
+        let bookData = {}; // Object to store book data
+
+        // Pre-fetch the book data when the page loads
+        async function loadBookData() {
+            const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1SUvetZptrSWVz04qkQfj9n2NbfjcsohOFZRSmnXs5Rw/export?format=csv'; // Google Sheets CSV link
+            const response = await fetch(spreadsheetUrl);
+            const data = await response.text();
+            const rows = data.split('\n').map(row => row.trim()).filter(row => row !== ''); // Trim and remove empty rows
+
+            // Process the rows and store them in an object
+            rows.forEach(row => {
+                const columns = row.split(',');
+                const id = columns[0].trim();
+                const name = columns[1].trim();
+                const image = columns[2].trim();
+                const borrowed = columns[3].trim(); // Borrowed status
+                bookData[id] = { name, image, borrowed }; // Store book data by ID
+            });
+        }
+
+        // Fetch book information based on the book code
+        function fetchBookInfo(bookCode) {
+            if (bookData[bookCode]) {
+                // Book found, update the UI
+                const { name, image, borrowed } = bookData[bookCode];
+                displayBookInfo(name, image, borrowed);
+                hideRFIDInput(); // Hide the RFID input box after a successful scan
+            } else {
+                // Book not found, display an error message
+                displayBookInfo('Book not found', '', '');
+            }
+        }
+
+        // Function to update book information on the page
+        function displayBookInfo(bookName, bookImage, borrowed) {
+            const bookNameElement = document.getElementById('bookName');
+            const bookImageElement = document.getElementById('bookImage');
+            const borrowedStatusElement = document.getElementById('borrowedStatus');
+
+            // Update book name and image
+            bookNameElement.textContent = bookName;
+            if (bookImage) {
+                bookImageElement.src = bookImage;
+                bookImageElement.style.display = 'block';
+            } else {
+                bookImageElement.style.display = 'none';
+            }
+
+            // Display status or confirmation prompt
+            borrowedStatusElement.textContent = borrowed === 'yes' ? 'This book is already borrowed.' : 'Please confirm the book you want to borrow.';
+        }
+
+        // Handle book code input (for RFID scanning)
+        function handleScan(event) {
+            const bookCode = event.target.value.trim();
+            if (bookCode) {
+                fetchBookInfo(bookCode);
+            }
+        }
+
+        // Handle borrowing confirmation
+        function handleConfirm() {
+            const bookCode = document.getElementById('rfidInput').value.trim();
+            if (bookData[bookCode] && bookData[bookCode].borrowed === 'no') {
+                // Mark the book as borrowed
+                bookData[bookCode].borrowed = 'yes';
+
+                // Update the borrowed status in the Google Sheets via Apps Script
+                updateSpreadsheet(bookCode, 'yes');
+                alert("Successfully borrowed!");
+            } else {
+                alert("This book is already borrowed or not found.");
+            }
+        }
+
+        // Clear the input field and reset book information
+        function handleClear() {
+            const rfidInput = document.getElementById('rfidInput');
+            const scanLabel = document.getElementById('scanLabel');
+
+            // Reset the input box and show it again
+            rfidInput.value = '';
+            rfidInput.style.display = 'block';
+            scanLabel.style.display = 'block';
+
+            // Reset book information display
+            displayBookInfo('Book Name will appear here', '', '');
+
+            // Automatically refocus the input box
+            rfidInput.focus();
+        }
+
+
+        // Hide RFID input box and its label
+        function hideRFIDInput() {
+            const rfidInput = document.getElementById('rfidInput');
+            const scanLabel = document.getElementById('scanLabel');
+            rfidInput.style.display = 'none'; // Hide the input box
+            scanLabel.style.display = 'none'; // Hide the label
+        }
+
+        // Update the spreadsheet with the new borrowed status
+        async function updateSpreadsheet(bookCode, status) {
+            const webAppUrl = 'https://script.google.com/macros/s/AKfycbwxAlqh_VbExObqZZDc_O0lJJ8CvSKP8g8T0U7ut3lZMSVNorKo6waQ56b9tXH_wVNSLg/exec'; // Replace with your Web App URL
+            const response = await fetch(`${webAppUrl}?bookCode=${bookCode}&status=${status}`);
+            const result = await response.text();
+            console.log(result); // Log the response for debugging
+        }
+
+        // Load the book data when the page loads
+        window.onload = loadBookData;
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Panel for Book Scanning -->
+        <div class="left-panel">
+            <!-- RFID Scan Section -->
+            <div class="scan-section">
+                <label id="scanLabel" for="rfidInput">Scan Book RFID:</label>
+                <input type="text" id="rfidInput" placeholder="Scan RFID tag..." autofocus autocomplete="off" oninput="handleScan(event)">
+            </div>
+
+            <!-- Display Book Information Below Input -->
+            <div id="bookInfoSection">
+                <h3 id="bookName">Book Name will appear here</h3>
+                <img id="bookImage" src="" alt="Book Image" style="max-width: 400px; display: none;">
+                <p id="borrowedStatus"></p> <!-- Status of borrowed book -->
+            </div>
+
+            <!-- Footer Section -->
+            <div class="footer">
+                <p>WESTERN LEYTE COLLEGE OF ORMOC</p>
+                <p>A. Bonifacio St., Ormoc City, Leyte, 6541, Philippines</p>
+            </div>
+        </div>
+
+        <!-- Right Panel for Student Info and Borrow Confirmation -->
+        <div class="right-panel">
+            <!-- Back Button - Positioned at the Top Left -->
+            <div class="back-button">
+                <button onclick="window.history.back()">← Back</button>
+            </div>
+
+            <!-- Student Profile Section -->
+            <div class="profile-section">
+                <img src="images/profile_image.jpg" alt="Profile Image" class="profile-image">
+                <h2 class="name">NIEL ALVIN MAQUILAN</h2>
+                <p class="student-id">Student - 193</p>
+            </div>
+
+            <!-- Borrow Book Confirmation Section -->
+            <div class="welcome-section">
+                <h3>Please confirm the books you want to borrow</h3>
+            </div>
+
+            <!-- Confirm and Cancel (Clear) Button Section -->
+            <div class="button-section">
+                <button class="confirm-button" onclick="handleConfirm()">CONFIRM</button>
+                <button class="cancel-button" onclick="handleClear()">CLEAR</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

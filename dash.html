@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Search and Borrow</title>
+    <link rel="stylesheet" href="dash.css">
+    <script>
+        let bookData = {}; // Object to store book data
+
+        // Pre-fetch the book data when the page loads
+        async function loadBookData() {
+            const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1SUvetZptrSWVz04qkQfj9n2NbfjcsohOFZRSmnXs5Rw/export?format=csv'; 
+            const response = await fetch(spreadsheetUrl);
+            const data = await response.text();
+            const rows = data.split('\n').map(row => row.trim()).filter(row => row !== '');
+
+            // Skip the header row (index 0)
+            rows.slice(1).forEach(row => {
+                const columns = row.split(',');
+
+                // Ensure there are exactly 6 columns to avoid indexing errors
+                if (columns.length === 6) {
+                    const id = columns[0].trim();
+                    const name = columns[1].trim();
+                    const image = columns[2].trim();
+                    const borrowed = columns[3].trim();
+                    let author = columns[4].trim();  // Fetch the author field
+                    const ebook = columns[5].trim();
+
+                    // Debugging: Log the raw data
+                    console.log(`Raw Data - ID: ${id}, Name: ${name}, Author: '${author}', Ebook: ${ebook}`);
+
+                    // If the author field is empty or contains "no", replace it with "Unknown Author"
+                    if (!author || author.toLowerCase() === 'no' || author === '') {
+                        author = 'Unknown Author';
+                    }
+
+                    // Debugging: Log the cleaned author value
+                    console.log(`Cleaned Author Value: '${author}'`);
+
+                    // Store the book data
+                    bookData[id] = { name, image, borrowed, author, ebook };
+                }
+            });
+        }
+
+        // Function to display book information
+        function displayBookInfo(query) {
+            let found = false;
+            for (let bookCode in bookData) {
+                const { name, image, borrowed, author, ebook } = bookData[bookCode];
+                
+                // Check if query is a substring of either the bookCode or name
+                if (bookCode.toLowerCase().includes(query.toLowerCase()) || name.toLowerCase().includes(query.toLowerCase())) {
+                    const bookDetails = `
+                        <p><strong>Title:</strong> ${name}</p>
+                        <img src="${image}" alt="${name}" class="book-image" style="max-width: 200px;">
+                        <p><strong>Author:</strong> ${author}</p>
+                        <p><strong>Ebook Available:</strong> ${ebook === 'yes' ? 'Yes' : 'No'}</p>
+                        <p><strong>Status:</strong> ${borrowed === 'yes' ? 'This book is already borrowed.' : 'Available for borrowing.'}</p>
+                    `;
+                    document.getElementById('book-info').innerHTML = bookDetails;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                document.getElementById('book-info').innerHTML = '<p>No book found with this code or name.</p>';
+            }
+        }
+
+
+
+
+        // Handle book code input (RFID or Manual Code)
+        function handleScan(event) {
+            const query = event.target.value.trim();
+            if (query) {
+                displayBookInfo(query);
+            }
+        }
+
+        // Clear input and reset display
+        // Clear input and reset display
+        // Clear input and reset display
+        function handleClear() {
+            const bookCodeInput = document.getElementById('book-code');
+            bookCodeInput.value = '';
+
+            // Only display the default book image without text or empty .png
+            document.getElementById('book-info').innerHTML = `
+                <img src="images/Bookbg.jpg" alt="" class="book-image" style="max-width: 200px;">
+            `;
+            
+            bookCodeInput.focus();
+        }
+
+
+        // Function for scanning another book (resets the input field)
+        function handleScanAnother() {
+            handleClear();  // Call handleClear to reset the input and book details
+        }
+
+        window.onload = loadBookData;
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <div class="profile-section">
+                <img src="images/profile_image.jpg" alt="Profile" class="profile-image">
+                <h2 class="name">NIEL ALVIN MAQUILAN</h2>
+                <p class="student-id">Student - 193</p>
+            </div>
+            <div class="welcome-section">
+                <h3>Welcome Back, Niel ALVIN!</h3>
+                <p>You Have Zero (0) Borrowed Books.</p>
+            </div>
+            <div class="button-section">
+                <!-- Restored the Borrow and Return buttons -->
+                <button class="borrow-button" onclick="window.location.href='borrowbook.html'">BORROW</button>
+                <button class="return-button" onclick="window.location.href='return.html'">RETURN</button>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="search-bar">
+                <input type="text" id="book-code" placeholder="Enter Book Code or Scan RFID" oninput="handleScan(event)">
+            </div>
+            <div class="book-details">
+                <h4>Book Details</h4>
+                <div id="book-info"></div>
+            </div>
+            <!-- Added Scan Another button -->
+            <button class="scan-another-button" onclick="handleScanAnother()">Clear</button>
+        </div>
+    </div>
+</body>
+</html>

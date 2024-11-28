@@ -1,0 +1,154 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #804141;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    position: relative;
+}
+
+.container {
+    display: flex;
+    width: 80%;
+    height: 80%;
+    background-color: #f7f7f7;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.left-panel {
+    background-color: #3e0f0f;
+    color: white;
+    padding: 20px;
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.right-panel {
+    background-color: #e9e9e9;
+    width: 50%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-section {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profile-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    border: 3px solid white;
+}
+
+.name {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.student-id {
+    font-size: 1em;
+}
+
+.welcome-section {
+    text-align: center;
+    color: black;
+    background-color: white;
+    padding: 10px;
+    margin: 20px 0;
+    border-radius: 5px;
+    width: 80%;
+}
+
+.button-section {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    width: 100%;
+}
+
+.confirm-button,
+.cancel-button {
+    width: 110px;
+    padding: 10px;
+    border: none;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2em;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.confirm-button {
+    background-color: #00b400;
+}
+
+.cancel-button {
+    background-color: #e74c3c;
+}
+
+#bookScanInput {
+    padding: 10px;
+    font-size: 1.2em;
+    width: 80%;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+#bookInfoSection {
+    text-align: center;
+}
+
+#bookName {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+#bookImage {
+    width: 300px;  /* Increase the width of the image */
+    height: 450px; /* Adjust the height accordingly */
+    object-fit: cover;
+    margin-top: 20px;
+    display: block; /* Ensure the image is displayed as a block element */
+    margin-left: auto;
+    margin-right: auto; /* Center the image horizontally */
+}
+
+
+#borrowedStatus {
+    font-size: 1.2em;
+    color: #f39c12;
+}
+
+.back-button {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: transparent;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #000;
+}
+
+.footer-address {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 1.2em;
+}
